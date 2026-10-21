@@ -1,11 +1,13 @@
 
 package com.example.projetinho.entity.pedido_item_pedido;
 
-import com.example.projetinho.entity.ClienteEntity;
+import com.example.projetinho.entity.cliente_fornecedor.ClienteEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,6 +40,8 @@ public class PedidoEntity {
     private BigDecimal total = BigDecimal.ZERO;
 
     // Um pedido possui vários itens
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @OneToMany(
             mappedBy = "pedido",
             cascade = CascadeType.ALL,

@@ -1,77 +1,35 @@
 package com.example.projetinho.entity.avaliacao;
 
+import com.example.projetinho.entity.categoria_produto.ProdutoEntity;
+import com.example.projetinho.entity.cliente_fornecedor.ClienteEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "avaliacao")
 public class AvaliacaoEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Column(name = "cliente_id", nullable = false)
-    private Long clienteId;
+    // Cliente que fez a avaliação
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private ClienteEntity cliente;
 
-    @NotNull
-    @Column(name = "produto_id", nullable = false)
-    private Long produtoId;
+    // Produto avaliado
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "produto_id", nullable = false)
+    private ProdutoEntity produto;
 
-    @NotNull
-    @Min(1)
-    @Max(5)
     @Column(nullable = false)
     private Integer nota;
 
-    @Size(max = 1000)
     @Column(length = 1000)
     private String comentario;
-
-    public void Avaliacao(Long clienteId, Long produtoId,
-                          Integer nota, String comentario){
-        this.clienteId = clienteId;
-        this.produtoId = produtoId;
-        this.nota = nota;
-        this.comentario = comentario;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Long getClienteId() {
-        return clienteId;
-    }
-
-    public void setClienteId(Long clienteId) {
-        this.clienteId = clienteId;
-    }
-
-    public Long getProdutoId() {
-        return produtoId;
-    }
-
-    public void setProdutoId(Long produtoId) {
-        this.produtoId = produtoId;
-    }
-
-    public Integer getNota() {
-        return nota;
-    }
-
-    public void setNota(Integer nota) {
-        this.nota = nota;
-    }
-
-    public String getComentario() {
-        return comentario;
-    }
-
-    public void setComentario(String comentario) {
-        this.comentario = comentario;
-    }
 
 }

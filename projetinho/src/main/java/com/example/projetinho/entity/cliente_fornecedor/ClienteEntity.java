@@ -10,19 +10,18 @@ import lombok.NoArgsConstructor;
 @Data
 @Entity
 @Table(name = "Cliente")
-public class ClienteEntity<M> {
+public class ClienteEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(nullable = false)
     private String nome;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false, unique = true)
     private String telefone;
-
 
 }

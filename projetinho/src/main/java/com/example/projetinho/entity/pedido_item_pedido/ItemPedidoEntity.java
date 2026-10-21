@@ -1,9 +1,12 @@
 package com.example.projetinho.entity.pedido_item_pedido;
 
+import com.example.projetinho.entity.categoria_produto.ProdutoEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 
@@ -19,11 +22,14 @@ public class ItemPedidoEntity {
     private Long id;
 
     // Pedido ao qual o item pertence
+    // Excluído do equals/hashCode/toString para evitar recursão infinita
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pedido_id", nullable = false)
     private PedidoEntity pedido;
 
-    // Produto que está sendo comprado
+    // ProdutoEntity que está sendo comprado
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "produto_id", nullable = false)
     private ProdutoEntity produto;

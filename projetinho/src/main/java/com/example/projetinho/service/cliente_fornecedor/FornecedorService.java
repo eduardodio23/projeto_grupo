@@ -3,6 +3,7 @@ package com.example.projetinho.service.cliente_fornecedor;
 import com.example.projetinho.dto.cliente_fornecedor.FornecedorRequestDTO;
 import com.example.projetinho.dto.cliente_fornecedor.FornecedorResponseDTO;
 import com.example.projetinho.entity.cliente_fornecedor.FornecedorEntity;
+import com.example.projetinho.exception.RecursoNaoEncontradoException;
 import com.example.projetinho.repository.cliente_fornecedor.FornecedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,14 +19,15 @@ public class FornecedorService {
     public List<FornecedorResponseDTO> listarTodos() {
         return repository.findAll()
                 .stream()
-                .map(fornecedor -> new FornecedorResponseDTO(
-                        fornecedor.getNome(),
-                        fornecedor.getEmail(),
-                        fornecedor.getTelefone()))
+                .map(this::converterParaDTO)
                 .toList();
     }
 
-    public FornecedorEntity salvar(FornecedorRequestDTO dto) {
+    public FornecedorResponseDTO buscarPorId(Long id) {
+        return converterParaDTO(buscarEntidade(id));
+    }
+
+    public FornecedorResponseDTO salvar(FornecedorRequestDTO dto) {
         if (repository.findByEmail(dto.getEmail()).isPresent()) {
             throw new IllegalArgumentException(
                     "Fornecedor já cadastrado!");
@@ -37,15 +39,13 @@ public class FornecedorService {
         novoFornecedor.setEmail(dto.getEmail());
         novoFornecedor.setTelefone(dto.getTelefone());
 
-        return repository.save(novoFornecedor);
+        return converterParaDTO(repository.save(novoFornecedor));
     }
 
-    public FornecedorEntity atualizar(
+    public FornecedorResponseDTO atualizar(
             Long id, FornecedorRequestDTO dto) {
 
-        FornecedorEntity fornecedor = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Fornecedor não encontrado!"));
+        FornecedorEntity fornecedor = buscarEntidade(id);
 
         if (!fornecedor.getEmail().equals(dto.getEmail())
                 && repository.findByEmail(dto.getEmail()).isPresent()) {
@@ -57,15 +57,29 @@ public class FornecedorService {
         fornecedor.setEmail(dto.getEmail());
         fornecedor.setTelefone(dto.getTelefone());
 
-        return repository.save(fornecedor);
+        return converterParaDTO(repository.save(fornecedor));
     }
 
     public void excluir(Long id) {
         if (!repository.existsById(id)) {
-            throw new IllegalArgumentException(
+            throw new RecursoNaoEncontradoException(
                     "Fornecedor não encontrado!");
         }
 
         repository.deleteById(id);
+    }
+
+    private FornecedorEntity buscarEntidade(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Fornecedor não encontrado!"));
+    }
+
+    private FornecedorResponseDTO converterParaDTO(FornecedorEntity fornecedor) {
+        return new FornecedorResponseDTO(
+                fornecedor.getId(),
+                fornecedor.getNome(),
+                fornecedor.getEmail(),
+                fornecedor.getTelefone());
     }
 }

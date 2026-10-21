@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/Fornecedores")
+@RequestMapping({"/Fornecedores", "/fornecedores"})
 public class FornecedorController {
 
     @Autowired
@@ -26,17 +26,24 @@ public class FornecedorController {
                 .body(service.listarTodos());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<FornecedorResponseDTO> buscarPorId(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(service.buscarPorId(id));
+    }
+
     @PostMapping
     public ResponseEntity<Map<?, ?>> salvar(
             @Valid @RequestBody FornecedorRequestDTO dto) {
 
-        service.salvar(dto);
+        FornecedorResponseDTO fornecedor = service.salvar(dto);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(Map.of(
-                        "mensagem",
-                        "Fornecedor salvo com sucesso!"));
+                        "mensagem", "Fornecedor salvo com sucesso!",
+                        "id", fornecedor.getId()));
     }
 
     @PutMapping("/{id}")

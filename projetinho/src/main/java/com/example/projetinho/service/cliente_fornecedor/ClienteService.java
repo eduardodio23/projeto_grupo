@@ -3,6 +3,7 @@ package com.example.projetinho.service.cliente_fornecedor;
 import com.example.projetinho.dto.cliente_fornecedor.ClienteRequestDTO;
 import com.example.projetinho.dto.cliente_fornecedor.ClienteResponseDTO;
 import com.example.projetinho.entity.cliente_fornecedor.ClienteEntity;
+import com.example.projetinho.exception.RecursoNaoEncontradoException;
 import com.example.projetinho.repository.cliente_fornecedor.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,14 +19,15 @@ public class ClienteService {
         return repository
                 .findAll()
                 .stream()
-                .map(clienteEntity -> new ClienteResponseDTO(
-                        clienteEntity.getNome(),
-                        clienteEntity.getEmail(),
-                        clienteEntity.getTelefone()))
+                .map(this::converterParaDTO)
                 .toList();
     }
 
-    public ClienteEntity salvar(ClienteRequestDTO dto) {
+    public ClienteResponseDTO buscarPorId(Long id) {
+        return converterParaDTO(buscarEntidade(id));
+    }
+
+    public ClienteResponseDTO salvar(ClienteRequestDTO dto) {
         if (repository.findByEmail(dto.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Cliente já cadastrado!");
         }
@@ -34,27 +36,46 @@ public class ClienteService {
         novoCliente.setEmail(dto.getEmail());
         novoCliente.setTelefone(dto.getTelefone());
 
-        return repository.save(novoCliente);
+        return converterParaDTO(repository.save(novoCliente));
     }
 
-    public ClienteEntity atualizar(Long id, ClienteRequestDTO dto) {
-        if (!repository.existsById(id))
-            throw new IllegalArgumentException("Cliente não cadastrado!");
+    public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO dto) {
+        // Busca o cliente existente (antes era criado um cliente novo)
+        ClienteEntity cliente = buscarEntidade(id);
 
-        ClienteEntity novoCliente = new ClienteEntity();
-        novoCliente.setNome(dto.getNome());
-        novoCliente.setEmail(dto.getEmail());
-        novoCliente.setTelefone(dto.getTelefone());
+        if (!cliente.getEmail().equals(dto.getEmail())
+                && repository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException(
+                    "Email já cadastrado para outro cliente!");
+        }
 
-        return repository.save(novoCliente);
+        cliente.setNome(dto.getNome());
+        cliente.setEmail(dto.getEmail());
+        cliente.setTelefone(dto.getTelefone());
+
+        return converterParaDTO(repository.save(cliente));
     }
 
     public void excluir(Long id) {
         if (!repository.existsById(id))
-            throw new IllegalArgumentException("Cliene não encontrado!");
+            throw new RecursoNaoEncontradoException("Cliente não encontrado!");
 
         repository.deleteById(id);
 
+    }
+
+    private ClienteEntity buscarEntidade(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException("Cliente não encontrado!"));
+    }
+
+    private ClienteResponseDTO converterParaDTO(ClienteEntity cliente) {
+        return new ClienteResponseDTO(
+                cliente.getId(),
+                cliente.getNome(),
+                cliente.getEmail(),
+                cliente.getTelefone());
     }
 
 }
